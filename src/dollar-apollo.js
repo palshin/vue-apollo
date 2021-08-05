@@ -152,18 +152,21 @@ export class DollarApollo {
     }))
   }
 
+  // eslint-disable-next-line accessor-pairs
   set skipAllQueries (value) {
     for (let key in this.queries) {
       this.queries[key].skip = value
     }
   }
 
+  // eslint-disable-next-line accessor-pairs
   set skipAllSubscriptions (value) {
     for (let key in this.subscriptions) {
       this.subscriptions[key].skip = value
     }
   }
 
+  // eslint-disable-next-line accessor-pairs
   set skipAll (value) {
     this.skipAllQueries = value
     this.skipAllSubscriptions = value

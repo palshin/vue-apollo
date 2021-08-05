@@ -1,8 +1,8 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('graphql-tag')) :
   typeof define === 'function' && define.amd ? define(['exports', 'graphql-tag'], factory) :
-  (factory((global['vue-apollo'] = {}),global.gql));
-}(this, (function (exports,gql) { 'use strict';
+  (global = global || self, factory(global['vue-apollo'] = {}, global.gql));
+}(this, function (exports, gql) { 'use strict';
 
   gql = gql && gql.hasOwnProperty('default') ? gql['default'] : gql;
 
@@ -794,7 +794,7 @@
 
         if (_this.hasDataField) {
           Object.defineProperty(_this.vm.$data.$apolloData.data, key, {
-            get: function get$$1() {
+            get: function get() {
               return _this.vm.$data[key];
             },
             enumerable: true,
@@ -802,7 +802,7 @@
           });
         } else {
           Object.defineProperty(_this.vm.$data, key, {
-            get: function get$$1() {
+            get: function get() {
               return _this.vm.$data.$apolloData.data[key];
             },
             enumerable: true,
@@ -1101,12 +1101,12 @@
       }
     }, {
       key: "client",
-      get: function get$$1() {
+      get: function get() {
         return this.vm.$apollo.getClient(this.options);
       }
     }, {
       key: "loading",
-      get: function get$$1() {
+      get: function get() {
         return this.vm.$data.$apolloData && this.vm.$data.$apolloData.queries[this.key] ? this.vm.$data.$apolloData.queries[this.key].loading : this._loading;
       },
       set: function set(value) {
@@ -1121,7 +1121,7 @@
       }
     }, {
       key: "loadingKey",
-      get: function get$$1() {
+      get: function get() {
         return this.options.loadingKey || this.vm.$apollo.loadingKey;
       }
     }]);
@@ -1388,7 +1388,8 @@
           immediate: true,
           deep: deep
         }));
-      }
+      } // eslint-disable-next-line accessor-pairs
+
     }, {
       key: "destroy",
       value: function destroy() {
@@ -1452,14 +1453,16 @@
         for (var key in this.queries) {
           this.queries[key].skip = value;
         }
-      }
+      } // eslint-disable-next-line accessor-pairs
+
     }, {
       key: "skipAllSubscriptions",
       set: function set(value) {
         for (var key in this.subscriptions) {
           this.subscriptions[key].skip = value;
         }
-      }
+      } // eslint-disable-next-line accessor-pairs
+
     }, {
       key: "skipAll",
       set: function set(value) {
@@ -2099,13 +2102,13 @@
     GlobalVue.use(ApolloProvider);
   }
 
-  exports.install = install;
+  exports.ApolloMutation = ApolloMutation;
   exports.ApolloProvider = ApolloProvider$1;
   exports.ApolloQuery = ApolloQuery;
   exports.ApolloSubscribeToMore = ApolloSubscribeToMore;
-  exports.ApolloMutation = ApolloMutation;
   exports.default = ApolloProvider;
+  exports.install = install;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));

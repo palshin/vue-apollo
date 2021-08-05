@@ -7,9 +7,9 @@ import {
   WatchQueryOptions,
   MutationOptions,
   SubscriptionOptions,
-} from 'apollo-client'
-import { FetchResult } from 'apollo-link'
-import { Observable } from 'apollo-client/util/Observable'
+  FetchResult,
+  Observable,
+} from '@apollo/client/core'
 import { ApolloProvider, VueApolloComponent } from './apollo-provider'
 import {
   VueApolloQueryDefinition,

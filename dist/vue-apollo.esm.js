@@ -788,7 +788,7 @@ function (_SmartApollo) {
 
       if (_this.hasDataField) {
         Object.defineProperty(_this.vm.$data.$apolloData.data, key, {
-          get: function get$$1() {
+          get: function get() {
             return _this.vm.$data[key];
           },
           enumerable: true,
@@ -796,7 +796,7 @@ function (_SmartApollo) {
         });
       } else {
         Object.defineProperty(_this.vm.$data, key, {
-          get: function get$$1() {
+          get: function get() {
             return _this.vm.$data.$apolloData.data[key];
           },
           enumerable: true,
@@ -1095,12 +1095,12 @@ function (_SmartApollo) {
     }
   }, {
     key: "client",
-    get: function get$$1() {
+    get: function get() {
       return this.vm.$apollo.getClient(this.options);
     }
   }, {
     key: "loading",
-    get: function get$$1() {
+    get: function get() {
       return this.vm.$data.$apolloData && this.vm.$data.$apolloData.queries[this.key] ? this.vm.$data.$apolloData.queries[this.key].loading : this._loading;
     },
     set: function set(value) {
@@ -1115,7 +1115,7 @@ function (_SmartApollo) {
     }
   }, {
     key: "loadingKey",
-    get: function get$$1() {
+    get: function get() {
       return this.options.loadingKey || this.vm.$apollo.loadingKey;
     }
   }]);
@@ -1382,7 +1382,8 @@ function () {
         immediate: true,
         deep: deep
       }));
-    }
+    } // eslint-disable-next-line accessor-pairs
+
   }, {
     key: "destroy",
     value: function destroy() {
@@ -1446,14 +1447,16 @@ function () {
       for (var key in this.queries) {
         this.queries[key].skip = value;
       }
-    }
+    } // eslint-disable-next-line accessor-pairs
+
   }, {
     key: "skipAllSubscriptions",
     set: function set(value) {
       for (var key in this.subscriptions) {
         this.subscriptions[key].skip = value;
       }
-    }
+    } // eslint-disable-next-line accessor-pairs
+
   }, {
     key: "skipAll",
     set: function set(value) {
@@ -2094,4 +2097,4 @@ if (GlobalVue) {
 }
 
 export default ApolloProvider;
-export { install, ApolloProvider$1 as ApolloProvider, ApolloQuery, ApolloSubscribeToMore, ApolloMutation };
+export { ApolloMutation, ApolloProvider$1 as ApolloProvider, ApolloQuery, ApolloSubscribeToMore, install };

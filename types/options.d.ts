@@ -8,25 +8,26 @@ import {
   ObservableQuery,
   NetworkStatus,
   ApolloQueryResult,
-  ApolloError
-} from 'apollo-client';
-import { FetchResult } from 'apollo-link';
-import { ServerError, ServerParseError } from 'apollo-link-http-common';
+  ApolloError,
+  FetchResult,
+  ServerError,
+  ServerParseError
+} from '@apollo/client/core';
 import { DocumentNode, GraphQLError } from 'graphql';
 
 /* Component options */
 
 export interface AllVueApolloComponentSpecialOptions<Instance> {
-  $skip: boolean
-  $skipAllQueries: boolean
-  $skipAllSubscriptions: boolean
-  $deep: boolean
-  $client: string
-  $loadingKey: string
-  $watchLoading: WatchLoading
-  $error: ErrorHandler
-  $query: Partial<VueApolloQueryDefinition<Instance>>
-  $subscribe: VueApolloSubscriptionProperty
+  $skip: boolean;
+  $skipAllQueries: boolean;
+  $skipAllSubscriptions: boolean;
+  $deep: boolean;
+  $client: string;
+  $loadingKey: string;
+  $watchLoading: WatchLoading;
+  $error: ErrorHandler;
+  $query: Partial<VueApolloQueryDefinition<Instance>>;
+  $subscribe: VueApolloSubscriptionProperty;
 }
 
 export type VueApolloComponentSpecialOptions<Instance> =

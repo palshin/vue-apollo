@@ -23,14 +23,14 @@ export const hey = Vue.extend({
   data () {
     return {
       waf: 'waf',
-      loading: 0
+      loading: 0,
     }
   },
 
   apollo: {
     $client: 'foo',
     $query: {
-      fetchPolicy: 'cache-only'
+      fetchPolicy: 'cache-only',
     },
     foo: gql`query`,
     message: {
@@ -40,7 +40,7 @@ export const hey = Vue.extend({
         this.hello.toUpperCase()
         this.meow
         return {
-          hello: this.hello.toUpperCase()
+          hello: this.hello.toUpperCase(),
         }
       },
       update: data => data.foo.bar,
@@ -82,10 +82,10 @@ export const hey = Vue.extend({
         updateQuery (previousResult, options) {
           return {
             ...previousResult,
-            foo: options.subscriptionData.data.foo
+            foo: options.subscriptionData.data.foo,
           }
-        }
-      }
+        },
+      },
     },
 
     testMultiSubs: {
@@ -94,14 +94,14 @@ export const hey = Vue.extend({
         {
           document: gql`subscription`,
           variables: {
-            foo: 'bar'
+            foo: 'bar',
           },
           updateQuery (previousResult, options) {
             return {
               ...previousResult,
-              foo: options.subscriptionData.data.foo
+              foo: options.subscriptionData.data.foo,
             }
-          }
+          },
         },
         {
           document: gql`subscription`,
@@ -114,10 +114,10 @@ export const hey = Vue.extend({
           updateQuery (previousResult, options) {
             return {
               ...previousResult,
-              foo: options.subscriptionData.data.foo
+              foo: options.subscriptionData.data.foo,
             }
-          }
-        }
+          },
+        },
       ],
     },
 
@@ -132,12 +132,12 @@ export const hey = Vue.extend({
           this.hello.toUpperCase()
           this.meow
           return {
-            hello: this.hello.toUpperCase()
+            hello: this.hello.toUpperCase(),
           }
         },
         result: () => {
           console.log(this.hello.toUpperCase())
-        }
+        },
       }
     },
 
@@ -146,31 +146,31 @@ export const hey = Vue.extend({
         query: gql`subscription`,
         variables (): OperationVariables {
           return {
-            foo: this.meow
+            foo: this.meow,
           }
         },
-        client: 'foo'
-      }
-    }
+        client: 'foo',
+      },
+    },
   },
 
   computed: {
     // https://vuejs.org/v2/guide/typescript.html#Annotating-Return-Types
     hello (): string {
       return this.waf === 'waf' ? 'waf waf' : 'hello'
-    }
+    },
   },
 
   created () {
     this.$apollo.mutate({
       mutation: gql`mutation {}`,
       variables: {
-        hello: this.hello
+        hello: this.hello,
       },
     })
     this.hello.toUpperCase()
     this.$apollo.vm.hello.toUpperCase()
-  }
+  },
 })
 
 export default Vue.extend({
@@ -186,16 +186,16 @@ export default Vue.extend({
       showTag: 'random',
       showMoreEnabled: true,
       page: 0,
-      _type: ''
+      _type: '',
     }
   },
   apollo: {
     $client: 'a',
     $query: {
       loadingKey: 'loading',
-      fetchPolicy: 'cache-first'
+      fetchPolicy: 'cache-first',
     },
-    tags(): VueApolloQueryDefinition {
+    tags (): VueApolloQueryDefinition {
       return {
         query: gql`query tagList ($type: String!) {
           tags(type: $type) {
@@ -212,7 +212,7 @@ export default Vue.extend({
         manual: true,
         pollInterval: 300,
         result: (result) => {
-          this.updateCount ++
+          this.updateCount++
         },
         skip: (): boolean => {
           return this.skipQuery
@@ -281,7 +281,7 @@ export default Vue.extend({
     },
   },
   methods: {
-    addTag() {
+    addTag () {
       const newTag = this.newTag
       this.$apollo.mutate({
         mutation: gql`mutation ($type: String!, $label: String!) {
@@ -290,7 +290,7 @@ export default Vue.extend({
             label
           }
         }`,
-        variables: { type: this.type, label: newTag, },
+        variables: { type: this.type, label: newTag },
         updateQueries: {
           tagList: (previousResult, { mutationResult }) => {
             const { data } = mutationResult
@@ -317,8 +317,8 @@ export default Vue.extend({
         this.newTag = newTag
       })
     },
-    showMore() {
-      this.page ++
+    showMore () {
+      this.page++
       this.$apollo.queries.tagsPage.fetchMore({
         variables: {
           page: this.page,
@@ -348,7 +348,7 @@ export default Vue.extend({
       this.$apollo.queries.tags.refetch()
     },
   },
-  mounted() {
+  mounted () {
     const observer = this.$apollo.subscribe({
       query: SUB_QUERY,
       variables: {
@@ -356,12 +356,12 @@ export default Vue.extend({
       },
     })
     observer.subscribe({
-      next(data) {
+      next (data) {
         console.log('this.$apollo.subscribe', data)
       },
     })
 
     // enable to specify client when execute request
     this.$apollo.query({ query: gql`query mockQuery { id }`, client: 'test' })
-  }, 
+  },
 })
