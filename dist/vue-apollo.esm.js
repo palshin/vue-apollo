@@ -1,5 +1,3 @@
-import gql from 'graphql-tag';
-
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
     _typeof = function (obj) {
@@ -445,6 +443,7 @@ function () {
     this._pollInterval = null;
     this._watchers = [];
     this._destroyed = false;
+    this.lastApolloOptions = null;
 
     if (autostart) {
       this.autostart();
@@ -454,8 +453,12 @@ function () {
   _createClass(SmartApollo, [{
     key: "autostart",
     value: function autostart() {
+      var _this = this;
+
       if (typeof this.options.skip === 'function') {
-        this._skipWatcher = this.vm.$watch(this.options.skip.bind(this.vm), this.skipChanged.bind(this), {
+        this._skipWatcher = this.vm.$watch(function () {
+          return _this.options.skip.call(_this.vm, _this.vm, _this.key);
+        }, this.skipChanged.bind(this), {
           immediate: true,
           deep: this.options.deep
         });
@@ -502,29 +505,31 @@ function () {
   }, {
     key: "start",
     value: function start() {
-      var _this = this;
+      var _this2 = this;
 
       this.starting = true; // Reactive options
 
       var _loop = function _loop() {
         var prop = _arr[_i];
 
-        if (typeof _this.initialOptions[prop] === 'function') {
-          var queryCb = _this.initialOptions[prop].bind(_this.vm);
+        if (typeof _this2.initialOptions[prop] === 'function') {
+          var queryCb = _this2.initialOptions[prop].bind(_this2.vm);
 
-          _this.options[prop] = queryCb();
+          _this2.options[prop] = queryCb();
 
           var _cb = function _cb(query) {
-            _this.options[prop] = query;
+            _this2.options[prop] = query;
 
-            _this.refresh();
+            _this2.refresh();
           };
 
-          _cb = _this.options.throttle ? utils_2(_cb, _this.options.throttle) : _cb;
-          _cb = _this.options.debounce ? utils_3(_cb, _this.options.debounce) : _cb;
+          if (!_this2.vm.$isServer) {
+            _cb = _this2.options.throttle ? utils_2(_cb, _this2.options.throttle) : _cb;
+            _cb = _this2.options.debounce ? utils_3(_cb, _this2.options.debounce) : _cb;
+          }
 
-          _this._watchers.push(_this.vm.$watch(queryCb, _cb, {
-            deep: _this.options.deep
+          _this2._watchers.push(_this2.vm.$watch(queryCb, _cb, {
+            deep: _this2.options.deep
           }));
         }
       };
@@ -536,11 +541,14 @@ function () {
 
       if (typeof this.options.variables === 'function') {
         var cb = this.executeApollo.bind(this);
-        cb = this.options.throttle ? utils_2(cb, this.options.throttle) : cb;
-        cb = this.options.debounce ? utils_3(cb, this.options.debounce) : cb;
+
+        if (!this.vm.$isServer) {
+          cb = this.options.throttle ? utils_2(cb, this.options.throttle) : cb;
+          cb = this.options.debounce ? utils_3(cb, this.options.debounce) : cb;
+        }
 
         this._watchers.push(this.vm.$watch(function () {
-          return _this.options.variables.call(_this.vm);
+          return _this2.options.variables.call(_this2.vm);
         }, cb, {
           immediate: true,
           deep: this.options.deep
@@ -586,6 +594,7 @@ function () {
     value: function generateApolloOptions(variables) {
       var apolloOptions = utils_6(this.options, this.vueApolloSpecialKeys);
       apolloOptions.variables = variables;
+      this.lastApolloOptions = apolloOptions;
       return apolloOptions;
     }
   }, {
@@ -655,7 +664,7 @@ function () {
     key: "catchError",
     value: function catchError(error) {
       utils_7(error);
-      var catched = this.errorHandler(error);
+      var catched = this.errorHandler(error, this.vm, this.key, this.type, this.lastApolloOptions);
       if (catched) return;
 
       if (error.graphQLErrors && error.graphQLErrors.length !== 0) {
@@ -749,15 +758,7 @@ function (_SmartApollo) {
 
     _classCallCheck(this, SmartQuery);
 
-    // Simple query
-    if (!options.query) {
-      var query = options;
-      options = {
-        query: query
-      };
-    } // Add reactive data related to the query
-
-
+    // Add reactive data related to the query
     if (vm.$data.$apolloData && !vm.$data.$apolloData.queries[key]) {
       vm.$set(vm.$data.$apolloData.queries, key, {
         loading: false
@@ -772,6 +773,8 @@ function (_SmartApollo) {
 
     _defineProperty(_assertThisInitialized(_this), "_loading", false);
 
+    _defineProperty(_assertThisInitialized(_this), "_linkedSubscriptions", []);
+
     if (vm.$isServer) {
       _this.firstRun = new Promise(function (resolve, reject) {
         _this._firstRunResolve = resolve;
@@ -784,7 +787,7 @@ function (_SmartApollo) {
     }
 
     if (!options.manual) {
-      _this.hasDataField = _this.vm.$data.hasOwnProperty(key);
+      _this.hasDataField = Object.prototype.hasOwnProperty.call(_this.vm.$data, key);
 
       if (_this.hasDataField) {
         Object.defineProperty(_this.vm.$data.$apolloData.data, key, {
@@ -834,7 +837,31 @@ function (_SmartApollo) {
           return;
         }
 
-        this.sub.unsubscribe();
+        this.sub.unsubscribe(); // Subscribe to more subs
+
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = this._linkedSubscriptions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var sub = _step.value;
+            sub.stop();
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
       }
 
       this.previousVariablesJson = variablesJson; // Create observer
@@ -850,7 +877,33 @@ function (_SmartApollo) {
         }
       }
 
-      _get(_getPrototypeOf(SmartQuery.prototype), "executeApollo", this).call(this, variables);
+      _get(_getPrototypeOf(SmartQuery.prototype), "executeApollo", this).call(this, variables); // Subscribe to more subs
+
+
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = this._linkedSubscriptions[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var _sub = _step2.value;
+
+          _sub.start();
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+            _iterator2["return"]();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
     }
   }, {
     key: "startQuerySubscription",
@@ -866,7 +919,7 @@ function (_SmartApollo) {
     key: "maySetLoading",
     value: function maySetLoading() {
       var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var currentResult = this.observer.currentResult();
+      var currentResult = this.observer.getCurrentResult();
 
       if (force || currentResult.loading) {
         if (!this.loading) {
@@ -885,14 +938,36 @@ function (_SmartApollo) {
 
       var data = result.data,
           loading = result.loading,
-          error = result.error;
+          error = result.error,
+          errors = result.errors;
 
-      if (error) {
+      if (error || errors) {
         this.firstRunReject();
       }
 
       if (!loading) {
         this.loadingDone();
+      } // If `errorPolicy` is set to `all`, an error won't be thrown
+      // Instead result will have an `errors` array of GraphQL Errors
+      // so we need to reconstruct an error object similar to the normal one
+
+
+      if (errors && errors.length) {
+        var e = new Error("GraphQL error: ".concat(errors.map(function (e) {
+          return e.message;
+        }).join(' | ')));
+        Object.assign(e, {
+          graphQLErrors: errors,
+          networkError: null
+        }); // We skip query catchError logic
+        // as we only want to dispatch the error
+
+        _get(_getPrototypeOf(SmartQuery.prototype), "catchError", this).call(this, e);
+      }
+
+      if (this.observer.options.errorPolicy === 'none' && (error || errors)) {
+        // Don't apply result
+        return;
       }
 
       var hasResultCallback = typeof this.options.result === 'function';
@@ -925,7 +1000,7 @@ function (_SmartApollo) {
 
       this.firstRunReject();
       this.loadingDone(error);
-      this.nextResult(this.observer.currentResult()); // The observable closes the sub if an error occurs
+      this.nextResult(this.observer.getCurrentResult()); // The observable closes the sub if an error occurs
 
       this.resubscribeToQuery();
     }
@@ -1313,17 +1388,25 @@ function () {
     value: function addSmartQuery(key, options) {
       var _this3 = this;
 
-      var finalOptions = utils_5(options, this.vm);
+      var finalOptions = utils_5(options, this.vm); // Simple query
+
+      if (!finalOptions.query) {
+        var query = finalOptions;
+        finalOptions = {
+          query: query
+        };
+      }
+
       var apollo = this.vm.$options.apollo;
       var defaultOptions = this.provider.defaultOptions;
       var $query;
 
-      if (apollo && apollo.$query) {
-        $query = apollo.$query;
+      if (defaultOptions && defaultOptions.$query) {
+        $query = defaultOptions.$query;
       }
 
-      if ((!apollo || !apollo.$query) && defaultOptions && defaultOptions.$query) {
-        $query = defaultOptions.$query;
+      if (apollo && apollo.$query) {
+        $query = _objectSpread2({}, $query || {}, {}, apollo.$query);
       }
 
       if ($query) {
@@ -1368,6 +1451,11 @@ function () {
         options = utils_5(options, this.vm);
         var smart = this.subscriptions[key] = new SmartSubscription(this.vm, key, options, false);
         smart.autostart();
+
+        if (options.linkedQuery) {
+          options.linkedQuery._linkedSubscriptions.push(smart);
+        }
+
         return smart;
       }
     }
@@ -1479,7 +1567,11 @@ function () {
     }
 
     this.clients = options.clients || {};
-    this.clients.defaultClient = this.defaultClient = options.defaultClient;
+
+    if (options.defaultClient) {
+      this.clients.defaultClient = this.defaultClient = options.defaultClient;
+    }
+
     this.defaultOptions = options.defaultOptions;
     this.watchLoading = options.watchLoading;
     this.errorHandler = options.errorHandler;
@@ -1497,371 +1589,6 @@ function () {
 
   return ApolloProvider;
 }();
-
-function isDataFilled(data) {
-  return Object.keys(data).length > 0;
-}
-
-var CApolloQuery = {
-  name: 'ApolloQuery',
-  provide: function provide() {
-    return {
-      getDollarApollo: this.getDollarApollo,
-      getApolloQuery: this.getApolloQuery
-    };
-  },
-  props: {
-    query: {
-      type: [Function, Object],
-      required: true
-    },
-    variables: {
-      type: Object,
-      "default": undefined
-    },
-    fetchPolicy: {
-      type: String,
-      "default": undefined
-    },
-    pollInterval: {
-      type: Number,
-      "default": undefined
-    },
-    notifyOnNetworkStatusChange: {
-      type: Boolean,
-      "default": undefined
-    },
-    context: {
-      type: Object,
-      "default": undefined
-    },
-    update: {
-      type: Function,
-      "default": function _default(data) {
-        return data;
-      }
-    },
-    skip: {
-      type: Boolean,
-      "default": false
-    },
-    debounce: {
-      type: Number,
-      "default": 0
-    },
-    throttle: {
-      type: Number,
-      "default": 0
-    },
-    clientId: {
-      type: String,
-      "default": undefined
-    },
-    deep: {
-      type: Boolean,
-      "default": undefined
-    },
-    tag: {
-      type: String,
-      "default": 'div'
-    },
-    prefetch: {
-      type: Boolean,
-      "default": true
-    },
-    options: {
-      type: Object,
-      "default": function _default() {
-        return {};
-      }
-    }
-  },
-  data: function data() {
-    return {
-      result: {
-        data: null,
-        loading: false,
-        networkStatus: 7,
-        error: null
-      },
-      times: 0
-    };
-  },
-  watch: {
-    fetchPolicy: function fetchPolicy(value) {
-      this.$apollo.queries.query.setOptions({
-        fetchPolicy: value
-      });
-    },
-    pollInterval: function pollInterval(value) {
-      this.$apollo.queries.query.setOptions({
-        pollInterval: value
-      });
-    },
-    notifyOnNetworkStatusChange: function notifyOnNetworkStatusChange(value) {
-      this.$apollo.queries.query.setOptions({
-        notifyOnNetworkStatusChange: value
-      });
-    },
-    '$data.$apolloData.loading': function $data$apolloDataLoading(value) {
-      this.$emit('loading', !!value);
-    }
-  },
-  apollo: {
-    $client: function $client() {
-      return this.clientId;
-    },
-    query: function query() {
-      return _objectSpread2({
-        query: function query() {
-          if (typeof this.query === 'function') {
-            return this.query(gql);
-          }
-
-          return this.query;
-        },
-        variables: function variables() {
-          return this.variables;
-        },
-        fetchPolicy: this.fetchPolicy,
-        pollInterval: this.pollInterval,
-        debounce: this.debounce,
-        throttle: this.throttle,
-        notifyOnNetworkStatusChange: this.notifyOnNetworkStatusChange,
-        context: function context() {
-          return this.context;
-        },
-        skip: function skip() {
-          return this.skip;
-        },
-        deep: this.deep,
-        prefetch: this.prefetch
-      }, this.options, {
-        manual: true,
-        result: function result(_result) {
-          var _result2 = _result,
-              errors = _result2.errors,
-              loading = _result2.loading,
-              networkStatus = _result2.networkStatus;
-          var _result3 = _result,
-              error = _result3.error;
-          _result = Object.assign({}, _result);
-
-          if (errors && errors.length) {
-            error = new Error("Apollo errors occurred (".concat(errors.length, ")"));
-            error.graphQLErrors = errors;
-          }
-
-          var data = {};
-
-          if (loading) {
-            Object.assign(data, this.$_previousData, _result.data);
-          } else if (error) {
-            Object.assign(data, this.$apollo.queries.query.observer.getLastResult() || {}, _result.data);
-          } else {
-            data = _result.data;
-            this.$_previousData = _result.data;
-          }
-
-          var dataNotEmpty = isDataFilled(data);
-          this.result = {
-            data: dataNotEmpty ? this.update(data) : undefined,
-            fullData: dataNotEmpty ? data : undefined,
-            loading: loading,
-            error: error,
-            networkStatus: networkStatus
-          };
-          this.times = ++this.$_times;
-          this.$emit('result', this.result);
-        },
-        error: function error(_error) {
-          this.result.loading = false;
-          this.result.error = _error;
-          this.$emit('error', _error);
-        }
-      });
-    }
-  },
-  created: function created() {
-    this.$_times = 0;
-  },
-  methods: {
-    getDollarApollo: function getDollarApollo() {
-      return this.$apollo;
-    },
-    getApolloQuery: function getApolloQuery() {
-      return this.$apollo.queries.query;
-    }
-  },
-  render: function render(h) {
-    var result = this.$scopedSlots["default"]({
-      result: this.result,
-      times: this.times,
-      query: this.$apollo.queries.query,
-      isLoading: this.$apolloData.loading,
-      gqlError: this.result && this.result.error && this.result.error.gqlError
-    });
-
-    if (Array.isArray(result)) {
-      result = result.concat(this.$slots["default"]);
-    } else {
-      result = [result].concat(this.$slots["default"]);
-    }
-
-    return this.tag ? h(this.tag, result) : result[0];
-  }
-};
-
-var uid = 0;
-var CApolloSubscribeToMore = {
-  name: 'ApolloSubscribeToMore',
-  inject: ['getDollarApollo', 'getApolloQuery'],
-  props: {
-    document: {
-      type: [Function, Object],
-      required: true
-    },
-    variables: {
-      type: Object,
-      "default": undefined
-    },
-    updateQuery: {
-      type: Function,
-      "default": undefined
-    }
-  },
-  watch: {
-    document: 'refresh',
-    variables: 'refresh'
-  },
-  created: function created() {
-    this.$_key = "sub_component_".concat(uid++);
-  },
-  mounted: function mounted() {
-    this.refresh();
-  },
-  beforeDestroy: function beforeDestroy() {
-    this.destroy();
-  },
-  methods: {
-    destroy: function destroy() {
-      if (this.$_sub) {
-        this.$_sub.destroy();
-      }
-    },
-    refresh: function refresh() {
-      this.destroy();
-      var document = this.document;
-
-      if (typeof document === 'function') {
-        document = document(gql);
-      }
-
-      this.$_sub = this.getDollarApollo().addSmartSubscription(this.$_key, {
-        document: document,
-        variables: this.variables,
-        updateQuery: this.updateQuery,
-        linkedQuery: this.getApolloQuery()
-      });
-    }
-  },
-  render: function render(h) {
-    return null;
-  }
-};
-
-var CApolloMutation = {
-  props: {
-    mutation: {
-      type: [Function, Object],
-      required: true
-    },
-    variables: {
-      type: Object,
-      "default": undefined
-    },
-    optimisticResponse: {
-      type: Object,
-      "default": undefined
-    },
-    update: {
-      type: Function,
-      "default": undefined
-    },
-    refetchQueries: {
-      type: Function,
-      "default": undefined
-    },
-    clientId: {
-      type: String,
-      "default": undefined
-    },
-    tag: {
-      type: String,
-      "default": 'div'
-    }
-  },
-  data: function data() {
-    return {
-      loading: false,
-      error: null
-    };
-  },
-  watch: {
-    loading: function loading(value) {
-      this.$emit('loading', value);
-    }
-  },
-  methods: {
-    mutate: function mutate(options) {
-      var _this = this;
-
-      this.loading = true;
-      this.error = null;
-      var mutation = this.mutation;
-
-      if (typeof mutation === 'function') {
-        mutation = mutation(gql);
-      }
-
-      this.$apollo.mutate(_objectSpread2({
-        mutation: mutation,
-        client: this.clientId,
-        variables: this.variables,
-        optimisticResponse: this.optimisticResponse,
-        update: this.update,
-        refetchQueries: this.refetchQueries
-      }, options)).then(function (result) {
-        _this.$emit('done', result);
-
-        _this.loading = false;
-      })["catch"](function (e) {
-        utils_7(e);
-        _this.error = e;
-
-        _this.$emit('error', e);
-
-        _this.loading = false;
-      });
-    }
-  },
-  render: function render(h) {
-    var result = this.$scopedSlots["default"]({
-      mutate: this.mutate,
-      loading: this.loading,
-      error: this.error,
-      gqlError: this.error && this.error.gqlError
-    });
-
-    if (Array.isArray(result)) {
-      result = result.concat(this.$slots["default"]);
-    } else {
-      result = [result].concat(this.$slots["default"]);
-    }
-
-    return this.tag ? h(this.tag, result) : result[0];
-  }
-};
 
 function hasProperty(holder, key) {
   return typeof holder !== 'undefined' && Object.prototype.hasOwnProperty.call(holder, key);
@@ -2007,7 +1734,7 @@ function installMixin(Vue, vueVersion) {
   } : {}, {}, vueVersion === '2' ? {
     data: function data() {
       return {
-        '$apolloData': {
+        $apolloData: {
           queries: {},
           loading: 0,
           data: this.$_apolloInitData
@@ -2015,8 +1742,21 @@ function installMixin(Vue, vueVersion) {
       };
     },
     beforeCreate: function beforeCreate() {
+      var _this3 = this;
+
       initProvider.call(this);
       proxyData.call(this);
+
+      if (this.$isServer) {
+        // Patch render function to cleanup apollo
+        var render = this.$options.render;
+
+        this.$options.render = function (h) {
+          var result = render.call(_this3, h);
+          destroy.call(_this3);
+          return result;
+        };
+      }
     },
     serverPrefetch: function serverPrefetch() {
       if (this.$_apolloPromises) {
@@ -2064,25 +1804,12 @@ function install(Vue, options) {
     }
   });
   installMixin(Vue, vueVersion);
-
-  if (vueVersion === '2') {
-    Vue.component('apollo-query', CApolloQuery);
-    Vue.component('ApolloQuery', CApolloQuery);
-    Vue.component('apollo-subscribe-to-more', CApolloSubscribeToMore);
-    Vue.component('ApolloSubscribeToMore', CApolloSubscribeToMore);
-    Vue.component('apollo-mutation', CApolloMutation);
-    Vue.component('ApolloMutation', CApolloMutation);
-  }
 }
 ApolloProvider.install = install; // eslint-disable-next-line no-undef
 
-ApolloProvider.version = "3.0.0-rc.4"; // Apollo provider
+ApolloProvider.version = "3.1.1"; // Apollo provider
 
-var ApolloProvider$1 = ApolloProvider; // Components
-
-var ApolloQuery = CApolloQuery;
-var ApolloSubscribeToMore = CApolloSubscribeToMore;
-var ApolloMutation = CApolloMutation; // Auto-install
+var ApolloProvider$1 = ApolloProvider; // Auto-install
 
 var GlobalVue = null;
 
@@ -2097,4 +1824,4 @@ if (GlobalVue) {
 }
 
 export default ApolloProvider;
-export { ApolloMutation, ApolloProvider$1 as ApolloProvider, ApolloQuery, ApolloSubscribeToMore, install };
+export { ApolloProvider$1 as ApolloProvider, install };

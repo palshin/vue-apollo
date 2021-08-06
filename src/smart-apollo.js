@@ -13,6 +13,7 @@ export default class SmartApollo {
     this._pollInterval = null
     this._watchers = []
     this._destroyed = false
+    this.lastApolloOptions = null
 
     if (autostart) {
       this.autostart()
@@ -21,7 +22,7 @@ export default class SmartApollo {
 
   autostart () {
     if (typeof this.options.skip === 'function') {
-      this._skipWatcher = this.vm.$watch(this.options.skip.bind(this.vm), this.skipChanged.bind(this), {
+      this._skipWatcher = this.vm.$watch(() => this.options.skip.call(this.vm, this.vm, this.key), this.skipChanged.bind(this), {
         immediate: true,
         deep: this.options.deep,
       })
@@ -94,8 +95,10 @@ export default class SmartApollo {
           this.options[prop] = query
           this.refresh()
         }
-        cb = this.options.throttle ? throttle(cb, this.options.throttle) : cb
-        cb = this.options.debounce ? debounce(cb, this.options.debounce) : cb
+        if (!this.vm.$isServer) {
+          cb = this.options.throttle ? throttle(cb, this.options.throttle) : cb
+          cb = this.options.debounce ? debounce(cb, this.options.debounce) : cb
+        }
         this._watchers.push(this.vm.$watch(queryCb, cb, {
           deep: this.options.deep,
         }))
@@ -105,8 +108,10 @@ export default class SmartApollo {
     // GraphQL Variables
     if (typeof this.options.variables === 'function') {
       let cb = this.executeApollo.bind(this)
-      cb = this.options.throttle ? throttle(cb, this.options.throttle) : cb
-      cb = this.options.debounce ? debounce(cb, this.options.debounce) : cb
+      if (!this.vm.$isServer) {
+        cb = this.options.throttle ? throttle(cb, this.options.throttle) : cb
+        cb = this.options.debounce ? debounce(cb, this.options.debounce) : cb
+      }
       this._watchers.push(this.vm.$watch(() => this.options.variables.call(this.vm), cb, {
         immediate: true,
         deep: this.options.deep,
@@ -130,6 +135,7 @@ export default class SmartApollo {
   generateApolloOptions (variables) {
     const apolloOptions = omit(this.options, this.vueApolloSpecialKeys)
     apolloOptions.variables = variables
+    this.lastApolloOptions = apolloOptions
     return apolloOptions
   }
 
@@ -147,7 +153,7 @@ export default class SmartApollo {
     for (const handler of handlers) {
       if (handler) {
         catched = true
-        let result = handler.apply(this.vm, args)
+        const result = handler.apply(this.vm, args)
         if (typeof result !== 'undefined' && !result) {
           break
         }
@@ -167,13 +173,13 @@ export default class SmartApollo {
   catchError (error) {
     addGqlError(error)
 
-    const catched = this.errorHandler(error)
+    const catched = this.errorHandler(error, this.vm, this.key, this.type, this.lastApolloOptions)
 
     if (catched) return
 
     if (error.graphQLErrors && error.graphQLErrors.length !== 0) {
       console.error(`GraphQL execution errors for ${this.type} '${this.key}'`)
-      for (let e of error.graphQLErrors) {
+      for (const e of error.graphQLErrors) {
         console.error(e)
       }
     } else if (error.networkError) {

@@ -5,16 +5,9 @@ export default class SmartQuery extends SmartApollo {
   type = 'query'
   vueApolloSpecialKeys = VUE_APOLLO_QUERY_KEYWORDS
   _loading = false
+  _linkedSubscriptions = []
 
   constructor (vm, key, options, autostart = true) {
-    // Simple query
-    if (!options.query) {
-      const query = options
-      options = {
-        query,
-      }
-    }
-
     // Add reactive data related to the query
     if (vm.$data.$apolloData && !vm.$data.$apolloData.queries[key]) {
       vm.$set(vm.$data.$apolloData.queries, key, {
@@ -36,7 +29,7 @@ export default class SmartQuery extends SmartApollo {
     }
 
     if (!options.manual) {
-      this.hasDataField = this.vm.$data.hasOwnProperty(key)
+      this.hasDataField = Object.prototype.hasOwnProperty.call(this.vm.$data, key)
       if (this.hasDataField) {
         Object.defineProperty(this.vm.$data.$apolloData.data, key, {
           get: () => this.vm.$data[key],
@@ -94,6 +87,11 @@ export default class SmartQuery extends SmartApollo {
         return
       }
       this.sub.unsubscribe()
+
+      // Subscribe to more subs
+      for (const sub of this._linkedSubscriptions) {
+        sub.stop()
+      }
     }
 
     this.previousVariablesJson = variablesJson
@@ -112,6 +110,11 @@ export default class SmartQuery extends SmartApollo {
     }
 
     super.executeApollo(variables)
+
+    // Subscribe to more subs
+    for (const sub of this._linkedSubscriptions) {
+      sub.start()
+    }
   }
 
   startQuerySubscription () {
@@ -125,7 +128,7 @@ export default class SmartQuery extends SmartApollo {
   }
 
   maySetLoading (force = false) {
-    const currentResult = this.observer.currentResult()
+    const currentResult = this.observer.getCurrentResult()
     if (force || currentResult.loading) {
       if (!this.loading) {
         this.applyLoadingModifier(1)
@@ -138,14 +141,33 @@ export default class SmartQuery extends SmartApollo {
   nextResult (result) {
     super.nextResult(result)
 
-    const { data, loading, error } = result
+    const { data, loading, error, errors } = result
 
-    if (error) {
+    if (error || errors) {
       this.firstRunReject()
     }
 
     if (!loading) {
       this.loadingDone()
+    }
+
+    // If `errorPolicy` is set to `all`, an error won't be thrown
+    // Instead result will have an `errors` array of GraphQL Errors
+    // so we need to reconstruct an error object similar to the normal one
+    if (errors && errors.length) {
+      const e = new Error(`GraphQL error: ${errors.map(e => e.message).join(' | ')}`)
+      Object.assign(e, {
+        graphQLErrors: errors,
+        networkError: null,
+      })
+      // We skip query catchError logic
+      // as we only want to dispatch the error
+      super.catchError(e)
+    }
+
+    if (this.observer.options.errorPolicy === 'none' && (error || errors)) {
+      // Don't apply result
+      return
     }
 
     const hasResultCallback = typeof this.options.result === 'function'
@@ -177,7 +199,7 @@ export default class SmartQuery extends SmartApollo {
     super.catchError(error)
     this.firstRunReject()
     this.loadingDone(error)
-    this.nextResult(this.observer.currentResult())
+    this.nextResult(this.observer.getCurrentResult())
     // The observable closes the sub if an error occurs
     this.resubscribeToQuery()
   }

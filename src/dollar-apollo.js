@@ -52,7 +52,7 @@ export class DollarApollo {
     const observable = this.getClient(options).watchQuery(options)
     const _subscribe = observable.subscribe.bind(observable)
     observable.subscribe = (options) => {
-      let sub = _subscribe(options)
+      const sub = _subscribe(options)
       this._apolloSubscriptions.push(sub)
       return sub
     }
@@ -68,7 +68,7 @@ export class DollarApollo {
       const observable = this.getClient(options).subscribe(options)
       const _subscribe = observable.subscribe.bind(observable)
       observable.subscribe = (options) => {
-        let sub = _subscribe(options)
+        const sub = _subscribe(options)
         this._apolloSubscriptions.push(sub)
         return sub
       }
@@ -87,14 +87,25 @@ export class DollarApollo {
   addSmartQuery (key, options) {
     let finalOptions = reapply(options, this.vm)
 
+    // Simple query
+    if (!finalOptions.query) {
+      const query = finalOptions
+      finalOptions = {
+        query,
+      }
+    }
+
     const apollo = this.vm.$options.apollo
     const defaultOptions = this.provider.defaultOptions
     let $query
-    if (apollo && apollo.$query) {
-      $query = apollo.$query
-    }
-    if ((!apollo || !apollo.$query) && defaultOptions && defaultOptions.$query) {
+    if (defaultOptions && defaultOptions.$query) {
       $query = defaultOptions.$query
+    }
+    if (apollo && apollo.$query) {
+      $query = {
+        ...$query || {},
+        ...apollo.$query,
+      }
     }
     if ($query) {
       // Also replaces 'undefined' values
@@ -139,6 +150,10 @@ export class DollarApollo {
       const smart = this.subscriptions[key] = new SmartSubscription(this.vm, key, options, false)
       smart.autostart()
 
+      if (options.linkedQuery) {
+        options.linkedQuery._linkedSubscriptions.push(smart)
+      }
+
       return smart
     }
   }
@@ -154,14 +169,14 @@ export class DollarApollo {
 
   // eslint-disable-next-line accessor-pairs
   set skipAllQueries (value) {
-    for (let key in this.queries) {
+    for (const key in this.queries) {
       this.queries[key].skip = value
     }
   }
 
   // eslint-disable-next-line accessor-pairs
   set skipAllSubscriptions (value) {
-    for (let key in this.subscriptions) {
+    for (const key in this.subscriptions) {
       this.subscriptions[key].skip = value
     }
   }
@@ -176,10 +191,10 @@ export class DollarApollo {
     for (const unwatch of this._watchers) {
       unwatch()
     }
-    for (let key in this.queries) {
+    for (const key in this.queries) {
       this.queries[key].destroy()
     }
-    for (let key in this.subscriptions) {
+    for (const key in this.subscriptions) {
       this.subscriptions[key].destroy()
     }
     this._apolloSubscriptions.forEach((sub) => {
