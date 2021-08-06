@@ -8,6 +8,7 @@ import {
   MutationOptions,
   SubscriptionOptions,
   FetchResult,
+  OperationVariables,
   Observable,
 } from '@apollo/client/core'
 import { ApolloProvider, VueApolloComponent } from './apollo-provider'
@@ -47,24 +48,23 @@ export interface SmartQuery<V> extends SmartApollo<V>, PickedObservableQuery {
   loading: boolean
 }
 
-export interface SmartSubscription<V> extends SmartApollo<V> {
-}
+export type SmartSubscription<V> = SmartApollo<V>
 
 interface ClientOptions {
   client?: string
 }
 
-interface ApolloClientMethods<R> {
-  query: (options: QueryOptions & ClientOptions) => ReturnType<ApolloClient<R>['query']>
-  watchQuery: (options: WatchQueryOptions & ClientOptions) => ReturnType<ApolloClient<R>['watchQuery']>
-  mutate: (options: MutationOptions & ClientOptions) => ReturnType<ApolloClient<R>['mutate']>
-  subscribe: (options: SubscriptionOptions & ClientOptions) => ReturnType<ApolloClient<R>['subscribe']>
+interface ApolloClientMethods {
+  query<R = any, TVariables = OperationVariables>(options: QueryOptions<TVariables> & ClientOptions): Promise<ApolloQueryResult<R>>
+  watchQuery<R = any, TVariables = OperationVariables>(options: WatchQueryOptions<TVariables> & ClientOptions): ObservableQuery<R, TVariables>
+  mutate<R = any, TVariables = OperationVariables>(options: MutationOptions<R, TVariables> & ClientOptions): Promise<FetchResult<R>>
+  subscribe<R = any, TVariables = OperationVariables>(options: SubscriptionOptions<TVariables> & ClientOptions): Observable<FetchResult<R>>
 }
 
-export interface DollarApollo<V, R = any> extends ApolloClientMethods<R> {
-  vm: V
-  queries: Record<string, SmartQuery<V>>
-  subscriptions: Record<string, SmartSubscription<V>>
+export interface DollarApollo<V> extends ApolloClientMethods {
+  readonly vm: V
+  readonly queries: Record<string, SmartQuery<V>>
+  readonly subscriptions: Record<string, SmartSubscription<V>>
   readonly provider: ApolloProvider
   readonly loading: boolean
 
@@ -75,6 +75,6 @@ export interface DollarApollo<V, R = any> extends ApolloClientMethods<R> {
 
   getClient<R = any>(): ApolloClient<R>
 
-  addSmartQuery<R = any>(key: string, options: VueApolloQueryDefinition<V, R>): SmartQuery<V>
+  addSmartQuery<R = any>(key: string, options: VueApolloQueryDefinition<R>): SmartQuery<V>
   addSmartSubscription<R = any>(key: string, options: VueApolloSubscriptionDefinition): SmartSubscription<V>
 }
