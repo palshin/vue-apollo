@@ -1,6 +1,6 @@
 {
   "name": "vue-apollo",
-  "version": "3.0.0-rc.4",
+  "version": "3.1.0",
   "description": "Use Apollo and GraphQL with Vue.js",
   "main": "dist/vue-apollo.umd.js",
   "module": "dist/vue-apollo.esm.js",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Akryum/vue-apollo.git"
+    "url": "git+https://github.com/palshin/vue-apollo.git"
   },
   "keywords": [
     "vue",
@@ -33,9 +33,9 @@
   "author": "Guillaume Chau <guillaume.b.chau@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Akryum/vue-apollo/issues"
+    "url": "https://github.com/palshin/vue-apollo/issues"
   },
-  "homepage": "https://github.com/Akryum/vue-apollo#readme",
+  "homepage": "https://github.com/palshin/vue-apollo#readme",
   "peerDependencies": {
     "apollo-client": "^2.0.0",
     "apollo-link": "^1.0.0",
