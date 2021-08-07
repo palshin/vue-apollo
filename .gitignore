@@ -2,3 +2,4 @@ node_modules/
 types/test/*.js
 docs/.vuepress/dist/
 .idea/
+/yarn-error.log

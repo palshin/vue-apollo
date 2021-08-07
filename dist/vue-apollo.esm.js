@@ -1,4 +1,46 @@
+import gql from 'graphql-tag';
+
+function ownKeys(object, enumerableOnly) {
+  var keys = Object.keys(object);
+
+  if (Object.getOwnPropertySymbols) {
+    var symbols = Object.getOwnPropertySymbols(object);
+
+    if (enumerableOnly) {
+      symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      });
+    }
+
+    keys.push.apply(keys, symbols);
+  }
+
+  return keys;
+}
+
+function _objectSpread2(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+
+    if (i % 2) {
+      ownKeys(Object(source), true).forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    } else if (Object.getOwnPropertyDescriptors) {
+      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+    } else {
+      ownKeys(Object(source)).forEach(function (key) {
+        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+      });
+    }
+  }
+
+  return target;
+}
+
 function _typeof(obj) {
+  "@babel/helpers - typeof";
+
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
     _typeof = function (obj) {
       return typeof obj;
@@ -49,40 +91,6 @@ function _defineProperty(obj, key, value) {
   return obj;
 }
 
-function ownKeys(object, enumerableOnly) {
-  var keys = Object.keys(object);
-
-  if (Object.getOwnPropertySymbols) {
-    var symbols = Object.getOwnPropertySymbols(object);
-    if (enumerableOnly) symbols = symbols.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    });
-    keys.push.apply(keys, symbols);
-  }
-
-  return keys;
-}
-
-function _objectSpread2(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-
-    if (i % 2) {
-      ownKeys(source, true).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    } else if (Object.getOwnPropertyDescriptors) {
-      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-    } else {
-      ownKeys(source).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
-  }
-
-  return target;
-}
-
 function _inherits(subClass, superClass) {
   if (typeof superClass !== "function" && superClass !== null) {
     throw new TypeError("Super expression must either be null or a function");
@@ -114,6 +122,19 @@ function _setPrototypeOf(o, p) {
   return _setPrototypeOf(o, p);
 }
 
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function _assertThisInitialized(self) {
   if (self === void 0) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -128,6 +149,25 @@ function _possibleConstructorReturn(self, call) {
   }
 
   return _assertThisInitialized(self);
+}
+
+function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+  return function _createSuperInternal() {
+    var Super = _getPrototypeOf(Derived),
+        result;
+
+    if (hasNativeReflectConstruct) {
+      var NewTarget = _getPrototypeOf(this).constructor;
+
+      result = Reflect.construct(Super, arguments, NewTarget);
+    } else {
+      result = Super.apply(this, arguments);
+    }
+
+    return _possibleConstructorReturn(this, result);
+  };
 }
 
 function _superPropBase(object, property) {
@@ -161,19 +201,15 @@ function _get(target, property, receiver) {
 }
 
 function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
 
 function _toConsumableArray(arr) {
-  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
 }
 
 function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  }
+  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
 }
 
 function _arrayWithHoles(arr) {
@@ -181,21 +217,21 @@ function _arrayWithHoles(arr) {
 }
 
 function _iterableToArray(iter) {
-  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
 }
 
 function _iterableToArrayLimit(arr, i) {
-  if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
-    return;
-  }
+  var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"];
 
+  if (_i == null) return;
   var _arr = [];
   var _n = true;
   var _d = false;
-  var _e = undefined;
+
+  var _s, _e;
 
   try {
-    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+    for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) {
       _arr.push(_s.value);
 
       if (i && _arr.length === i) break;
@@ -214,157 +250,250 @@ function _iterableToArrayLimit(arr, i) {
   return _arr;
 }
 
+function _unsupportedIterableToArray(o, minLen) {
+  if (!o) return;
+  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+  var n = Object.prototype.toString.call(o).slice(8, -1);
+  if (n === "Object" && o.constructor) n = o.constructor.name;
+  if (n === "Map" || n === "Set") return Array.from(o);
+  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+}
+
+function _arrayLikeToArray(arr, len) {
+  if (len == null || len > arr.length) len = arr.length;
+
+  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+  return arr2;
+}
+
 function _nonIterableSpread() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance");
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
 function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+
+function _createForOfIteratorHelper(o, allowArrayLike) {
+  var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+
+  if (!it) {
+    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
+      var i = 0;
+
+      var F = function () {};
+
+      return {
+        s: F,
+        n: function () {
+          if (i >= o.length) return {
+            done: true
+          };
+          return {
+            done: false,
+            value: o[i++]
+          };
+        },
+        e: function (e) {
+          throw e;
+        },
+        f: F
+      };
+    }
+
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  var normalCompletion = true,
+      didErr = false,
+      err;
+  return {
+    s: function () {
+      it = it.call(o);
+    },
+    n: function () {
+      var step = it.next();
+      normalCompletion = step.done;
+      return step;
+    },
+    e: function (e) {
+      didErr = true;
+      err = e;
+    },
+    f: function () {
+      try {
+        if (!normalCompletion && it.return != null) it.return();
+      } finally {
+        if (didErr) throw err;
+      }
+    }
+  };
+}
+
+var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
-/* eslint-disable no-undefined,no-param-reassign,no-shadow */
+var index_umd = createCommonjsModule(function (module, exports) {
+(function (global, factory) {
+	 factory(exports) ;
+}(commonjsGlobal, (function (exports) {
+	/* eslint-disable no-undefined,no-param-reassign,no-shadow */
 
-/**
- * Throttle execution of a function. Especially useful for rate limiting
- * execution of handlers on events like resize and scroll.
- *
- * @param  {Number}    delay          A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
- * @param  {Boolean}   [noTrailing]   Optional, defaults to false. If noTrailing is true, callback will only execute every `delay` milliseconds while the
- *                                    throttled-function is being called. If noTrailing is false or unspecified, callback will be executed one final time
- *                                    after the last throttled-function call. (After the throttled-function has not been called for `delay` milliseconds,
- *                                    the internal counter is reset)
- * @param  {Function}  callback       A function to be executed after delay milliseconds. The `this` context and all arguments are passed through, as-is,
- *                                    to `callback` when the throttled-function is executed.
- * @param  {Boolean}   [debounceMode] If `debounceMode` is true (at begin), schedule `clear` to execute after `delay` ms. If `debounceMode` is false (at end),
- *                                    schedule `callback` to execute after `delay` ms.
- *
- * @return {Function}  A new, throttled, function.
- */
-function throttle (delay, noTrailing, callback, debounceMode) {
-  /*
-   * After wrapper has stopped being called, this timeout ensures that
-   * `callback` is executed at the proper times in `throttle` and `end`
-   * debounce modes.
-   */
-  var timeoutID;
-  var cancelled = false; // Keep track of the last time `callback` was executed.
+	/**
+	 * Throttle execution of a function. Especially useful for rate limiting
+	 * execution of handlers on events like resize and scroll.
+	 *
+	 * @param  {number}    delay -          A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
+	 * @param  {boolean}   [noTrailing] -   Optional, defaults to false. If noTrailing is true, callback will only execute every `delay` milliseconds while the
+	 *                                    throttled-function is being called. If noTrailing is false or unspecified, callback will be executed one final time
+	 *                                    after the last throttled-function call. (After the throttled-function has not been called for `delay` milliseconds,
+	 *                                    the internal counter is reset).
+	 * @param  {Function}  callback -       A function to be executed after delay milliseconds. The `this` context and all arguments are passed through, as-is,
+	 *                                    to `callback` when the throttled-function is executed.
+	 * @param  {boolean}   [debounceMode] - If `debounceMode` is true (at begin), schedule `clear` to execute after `delay` ms. If `debounceMode` is false (at end),
+	 *                                    schedule `callback` to execute after `delay` ms.
+	 *
+	 * @returns {Function}  A new, throttled, function.
+	 */
+	function throttle (delay, noTrailing, callback, debounceMode) {
+	  /*
+	   * After wrapper has stopped being called, this timeout ensures that
+	   * `callback` is executed at the proper times in `throttle` and `end`
+	   * debounce modes.
+	   */
+	  var timeoutID;
+	  var cancelled = false; // Keep track of the last time `callback` was executed.
 
-  var lastExec = 0; // Function to clear existing timeout
+	  var lastExec = 0; // Function to clear existing timeout
 
-  function clearExistingTimeout() {
-    if (timeoutID) {
-      clearTimeout(timeoutID);
-    }
-  } // Function to cancel next exec
-
-
-  function cancel() {
-    clearExistingTimeout();
-    cancelled = true;
-  } // `noTrailing` defaults to falsy.
+	  function clearExistingTimeout() {
+	    if (timeoutID) {
+	      clearTimeout(timeoutID);
+	    }
+	  } // Function to cancel next exec
 
 
-  if (typeof noTrailing !== 'boolean') {
-    debounceMode = callback;
-    callback = noTrailing;
-    noTrailing = undefined;
-  }
-  /*
-   * The `wrapper` function encapsulates all of the throttling / debouncing
-   * functionality and when executed will limit the rate at which `callback`
-   * is executed.
-   */
+	  function cancel() {
+	    clearExistingTimeout();
+	    cancelled = true;
+	  } // `noTrailing` defaults to falsy.
 
 
-  function wrapper() {
-    var self = this;
-    var elapsed = Date.now() - lastExec;
-    var args = arguments;
-
-    if (cancelled) {
-      return;
-    } // Execute `callback` and update the `lastExec` timestamp.
-
-
-    function exec() {
-      lastExec = Date.now();
-      callback.apply(self, args);
-    }
-    /*
-     * If `debounceMode` is true (at begin) this is used to clear the flag
-     * to allow future `callback` executions.
-     */
+	  if (typeof noTrailing !== 'boolean') {
+	    debounceMode = callback;
+	    callback = noTrailing;
+	    noTrailing = undefined;
+	  }
+	  /*
+	   * The `wrapper` function encapsulates all of the throttling / debouncing
+	   * functionality and when executed will limit the rate at which `callback`
+	   * is executed.
+	   */
 
 
-    function clear() {
-      timeoutID = undefined;
-    }
+	  function wrapper() {
+	    for (var _len = arguments.length, arguments_ = new Array(_len), _key = 0; _key < _len; _key++) {
+	      arguments_[_key] = arguments[_key];
+	    }
 
-    if (debounceMode && !timeoutID) {
-      /*
-       * Since `wrapper` is being called for the first time and
-       * `debounceMode` is true (at begin), execute `callback`.
-       */
-      exec();
-    }
+	    var self = this;
+	    var elapsed = Date.now() - lastExec;
 
-    clearExistingTimeout();
+	    if (cancelled) {
+	      return;
+	    } // Execute `callback` and update the `lastExec` timestamp.
 
-    if (debounceMode === undefined && elapsed > delay) {
-      /*
-       * In throttle mode, if `delay` time has been exceeded, execute
-       * `callback`.
-       */
-      exec();
-    } else if (noTrailing !== true) {
-      /*
-       * In trailing throttle mode, since `delay` time has not been
-       * exceeded, schedule `callback` to execute `delay` ms after most
-       * recent execution.
-       *
-       * If `debounceMode` is true (at begin), schedule `clear` to execute
-       * after `delay` ms.
-       *
-       * If `debounceMode` is false (at end), schedule `callback` to
-       * execute after `delay` ms.
-       */
-      timeoutID = setTimeout(debounceMode ? clear : exec, debounceMode === undefined ? delay - elapsed : delay);
-    }
-  }
 
-  wrapper.cancel = cancel; // Return the wrapper function.
+	    function exec() {
+	      lastExec = Date.now();
+	      callback.apply(self, arguments_);
+	    }
+	    /*
+	     * If `debounceMode` is true (at begin) this is used to clear the flag
+	     * to allow future `callback` executions.
+	     */
 
-  return wrapper;
-}
 
-/* eslint-disable no-undefined */
-/**
- * Debounce execution of a function. Debouncing, unlike throttling,
- * guarantees that a function is only executed a single time, either at the
- * very beginning of a series of calls, or at the very end.
- *
- * @param  {Number}   delay         A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
- * @param  {Boolean}  [atBegin]     Optional, defaults to false. If atBegin is false or unspecified, callback will only be executed `delay` milliseconds
- *                                  after the last debounced-function call. If atBegin is true, callback will be executed only at the first debounced-function call.
- *                                  (After the throttled-function has not been called for `delay` milliseconds, the internal counter is reset).
- * @param  {Function} callback      A function to be executed after delay milliseconds. The `this` context and all arguments are passed through, as-is,
- *                                  to `callback` when the debounced-function is executed.
- *
- * @return {Function} A new, debounced function.
- */
+	    function clear() {
+	      timeoutID = undefined;
+	    }
 
-function debounce (delay, atBegin, callback) {
-  return callback === undefined ? throttle(delay, atBegin, false) : throttle(delay, callback, atBegin !== false);
-}
+	    if (debounceMode && !timeoutID) {
+	      /*
+	       * Since `wrapper` is being called for the first time and
+	       * `debounceMode` is true (at begin), execute `callback`.
+	       */
+	      exec();
+	    }
 
-var index_esm = /*#__PURE__*/Object.freeze({
-  throttle: throttle,
-  debounce: debounce
+	    clearExistingTimeout();
+
+	    if (debounceMode === undefined && elapsed > delay) {
+	      /*
+	       * In throttle mode, if `delay` time has been exceeded, execute
+	       * `callback`.
+	       */
+	      exec();
+	    } else if (noTrailing !== true) {
+	      /*
+	       * In trailing throttle mode, since `delay` time has not been
+	       * exceeded, schedule `callback` to execute `delay` ms after most
+	       * recent execution.
+	       *
+	       * If `debounceMode` is true (at begin), schedule `clear` to execute
+	       * after `delay` ms.
+	       *
+	       * If `debounceMode` is false (at end), schedule `callback` to
+	       * execute after `delay` ms.
+	       */
+	      timeoutID = setTimeout(debounceMode ? clear : exec, debounceMode === undefined ? delay - elapsed : delay);
+	    }
+	  }
+
+	  wrapper.cancel = cancel; // Return the wrapper function.
+
+	  return wrapper;
+	}
+
+	/* eslint-disable no-undefined */
+	/**
+	 * Debounce execution of a function. Debouncing, unlike throttling,
+	 * guarantees that a function is only executed a single time, either at the
+	 * very beginning of a series of calls, or at the very end.
+	 *
+	 * @param  {number}   delay -         A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
+	 * @param  {boolean}  [atBegin] -     Optional, defaults to false. If atBegin is false or unspecified, callback will only be executed `delay` milliseconds
+	 *                                  after the last debounced-function call. If atBegin is true, callback will be executed only at the first debounced-function call.
+	 *                                  (After the throttled-function has not been called for `delay` milliseconds, the internal counter is reset).
+	 * @param  {Function} callback -      A function to be executed after delay milliseconds. The `this` context and all arguments are passed through, as-is,
+	 *                                  to `callback` when the debounced-function is executed.
+	 *
+	 * @returns {Function} A new, debounced function.
+	 */
+
+	function debounce (delay, atBegin, callback) {
+	  return callback === undefined ? throttle(delay, atBegin, false) : throttle(delay, callback, atBegin !== false);
+	}
+
+	exports.debounce = debounce;
+	exports.throttle = throttle;
+
+	Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
+
 });
+
+unwrapExports(index_umd);
 
 var utils = createCommonjsModule(function (module, exports) {
   var Globals = exports.Globals = {};
@@ -375,8 +504,8 @@ var utils = createCommonjsModule(function (module, exports) {
     };
   }
 
-  exports.throttle = factory(index_esm.throttle);
-  exports.debounce = factory(index_esm.debounce);
+  exports.throttle = factory(index_umd.throttle);
+  exports.debounce = factory(index_umd.debounce);
 
   exports.getMergedDefinition = function (def) {
     return Globals.Vue.util.mergeOptions({}, def);
@@ -423,9 +552,7 @@ var utils_6 = utils.omit;
 var utils_7 = utils.addGqlError;
 var utils_8 = utils.noop;
 
-var SmartApollo =
-/*#__PURE__*/
-function () {
+var SmartApollo = /*#__PURE__*/function () {
   function SmartApollo(vm, key, options) {
     var autostart = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
 
@@ -495,6 +622,28 @@ function () {
       }
     }
   }, {
+    key: "pollInterval",
+    get: function get() {
+      return this._pollInterval;
+    },
+    set: function set(value) {
+      this._pollInterval = value;
+    }
+  }, {
+    key: "skip",
+    get: function get() {
+      return this._skip;
+    },
+    set: function set(value) {
+      if (value) {
+        this.stop();
+      } else {
+        this.start();
+      }
+
+      this._skip = value;
+    }
+  }, {
     key: "refresh",
     value: function refresh() {
       if (!this._skip) {
@@ -517,18 +666,18 @@ function () {
 
           _this2.options[prop] = queryCb();
 
-          var _cb = function _cb(query) {
+          var cb = function cb(query) {
             _this2.options[prop] = query;
 
             _this2.refresh();
           };
 
           if (!_this2.vm.$isServer) {
-            _cb = _this2.options.throttle ? utils_2(_cb, _this2.options.throttle) : _cb;
-            _cb = _this2.options.debounce ? utils_3(_cb, _this2.options.debounce) : _cb;
+            cb = _this2.options.throttle ? utils_2(cb, _this2.options.throttle) : cb;
+            cb = _this2.options.debounce ? utils_3(cb, _this2.options.debounce) : cb;
           }
 
-          _this2._watchers.push(_this2.vm.$watch(queryCb, _cb, {
+          _this2._watchers.push(_this2.vm.$watch(queryCb, cb, {
             deep: _this2.options.deep
           }));
         }
@@ -560,28 +709,18 @@ function () {
   }, {
     key: "stop",
     value: function stop() {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      var _iterator = _createForOfIteratorHelper(this._watchers),
+          _step;
 
       try {
-        for (var _iterator = this._watchers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var unwatch = _step.value;
           unwatch();
         }
       } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+        _iterator.e(err);
       } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-            _iterator["return"]();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
+        _iterator.f();
       }
 
       if (this.sub) {
@@ -617,12 +756,11 @@ function () {
         args[_key - 1] = arguments[_key];
       }
 
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+      var _iterator2 = _createForOfIteratorHelper(handlers),
+          _step2;
 
       try {
-        for (var _iterator2 = handlers[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
           var handler = _step2.value;
 
           if (handler) {
@@ -635,18 +773,9 @@ function () {
           }
         }
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _iterator2.e(err);
       } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-            _iterator2["return"]();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
+        _iterator2.f();
       }
 
       return catched;
@@ -669,28 +798,19 @@ function () {
 
       if (error.graphQLErrors && error.graphQLErrors.length !== 0) {
         console.error("GraphQL execution errors for ".concat(this.type, " '").concat(this.key, "'"));
-        var _iteratorNormalCompletion3 = true;
-        var _didIteratorError3 = false;
-        var _iteratorError3 = undefined;
+
+        var _iterator3 = _createForOfIteratorHelper(error.graphQLErrors),
+            _step3;
 
         try {
-          for (var _iterator3 = error.graphQLErrors[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
             var e = _step3.value;
             console.error(e);
           }
         } catch (err) {
-          _didIteratorError3 = true;
-          _iteratorError3 = err;
+          _iterator3.e(err);
         } finally {
-          try {
-            if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
-              _iterator3["return"]();
-            }
-          } finally {
-            if (_didIteratorError3) {
-              throw _iteratorError3;
-            }
-          }
+          _iterator3.f();
         }
       } else if (error.networkError) {
         console.error("Error sending the ".concat(this.type, " '").concat(this.key, "'"), error.networkError);
@@ -717,28 +837,6 @@ function () {
         this._skipWatcher();
       }
     }
-  }, {
-    key: "pollInterval",
-    get: function get() {
-      return this._pollInterval;
-    },
-    set: function set(value) {
-      this._pollInterval = value;
-    }
-  }, {
-    key: "skip",
-    get: function get() {
-      return this._skip;
-    },
-    set: function set(value) {
-      if (value) {
-        this.stop();
-      } else {
-        this.start();
-      }
-
-      this._skip = value;
-    }
   }]);
 
   return SmartApollo;
@@ -746,10 +844,10 @@ function () {
 
 var VUE_APOLLO_QUERY_KEYWORDS = ['variables', 'watch', 'update', 'result', 'error', 'loadingKey', 'watchLoading', 'skip', 'throttle', 'debounce', 'subscribeToMore', 'prefetch', 'manual'];
 
-var SmartQuery =
-/*#__PURE__*/
-function (_SmartApollo) {
+var SmartQuery = /*#__PURE__*/function (_SmartApollo) {
   _inherits(SmartQuery, _SmartApollo);
+
+  var _super = _createSuper(SmartQuery);
 
   function SmartQuery(vm, key, options) {
     var _this;
@@ -765,7 +863,7 @@ function (_SmartApollo) {
       });
     }
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(SmartQuery).call(this, vm, key, options, false));
+    _this = _super.call(this, vm, key, options, false);
 
     _defineProperty(_assertThisInitialized(_this), "type", 'query');
 
@@ -816,6 +914,26 @@ function (_SmartApollo) {
   }
 
   _createClass(SmartQuery, [{
+    key: "client",
+    get: function get() {
+      return this.vm.$apollo.getClient(this.options);
+    }
+  }, {
+    key: "loading",
+    get: function get() {
+      return this.vm.$data.$apolloData && this.vm.$data.$apolloData.queries[this.key] ? this.vm.$data.$apolloData.queries[this.key].loading : this._loading;
+    },
+    set: function set(value) {
+      if (this._loading !== value) {
+        this._loading = value;
+
+        if (this.vm.$data.$apolloData && this.vm.$data.$apolloData.queries[this.key]) {
+          this.vm.$data.$apolloData.queries[this.key].loading = value;
+          this.vm.$data.$apolloData.loading += value ? 1 : -1;
+        }
+      }
+    }
+  }, {
     key: "stop",
     value: function stop() {
       _get(_getPrototypeOf(SmartQuery.prototype), "stop", this).call(this);
@@ -839,28 +957,18 @@ function (_SmartApollo) {
 
         this.sub.unsubscribe(); // Subscribe to more subs
 
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+        var _iterator = _createForOfIteratorHelper(this._linkedSubscriptions),
+            _step;
 
         try {
-          for (var _iterator = this._linkedSubscriptions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
             var sub = _step.value;
             sub.stop();
           }
         } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
+          _iterator.e(err);
         } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-              _iterator["return"]();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
-          }
+          _iterator.f();
         }
       }
 
@@ -880,29 +988,19 @@ function (_SmartApollo) {
       _get(_getPrototypeOf(SmartQuery.prototype), "executeApollo", this).call(this, variables); // Subscribe to more subs
 
 
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+      var _iterator2 = _createForOfIteratorHelper(this._linkedSubscriptions),
+          _step2;
 
       try {
-        for (var _iterator2 = this._linkedSubscriptions[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
           var _sub = _step2.value;
 
           _sub.start();
         }
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _iterator2.e(err);
       } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-            _iterator2["return"]();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
+        _iterator2.f();
       }
     }
   }, {
@@ -1015,6 +1113,11 @@ function (_SmartApollo) {
         lastError: lastError,
         lastResult: lastResult
       });
+    }
+  }, {
+    key: "loadingKey",
+    get: function get() {
+      return this.options.loadingKey || this.vm.$apollo.loadingKey;
     }
   }, {
     key: "watchLoading",
@@ -1168,44 +1271,17 @@ function (_SmartApollo) {
 
       this.loading = false;
     }
-  }, {
-    key: "client",
-    get: function get() {
-      return this.vm.$apollo.getClient(this.options);
-    }
-  }, {
-    key: "loading",
-    get: function get() {
-      return this.vm.$data.$apolloData && this.vm.$data.$apolloData.queries[this.key] ? this.vm.$data.$apolloData.queries[this.key].loading : this._loading;
-    },
-    set: function set(value) {
-      if (this._loading !== value) {
-        this._loading = value;
-
-        if (this.vm.$data.$apolloData && this.vm.$data.$apolloData.queries[this.key]) {
-          this.vm.$data.$apolloData.queries[this.key].loading = value;
-          this.vm.$data.$apolloData.loading += value ? 1 : -1;
-        }
-      }
-    }
-  }, {
-    key: "loadingKey",
-    get: function get() {
-      return this.options.loadingKey || this.vm.$apollo.loadingKey;
-    }
   }]);
 
   return SmartQuery;
 }(SmartApollo);
 
-var SmartSubscription =
-/*#__PURE__*/
-function (_SmartApollo) {
+var SmartSubscription = /*#__PURE__*/function (_SmartApollo) {
   _inherits(SmartSubscription, _SmartApollo);
 
-  function SmartSubscription() {
-    var _getPrototypeOf2;
+  var _super = _createSuper(SmartSubscription);
 
+  function SmartSubscription() {
     var _this;
 
     _classCallCheck(this, SmartSubscription);
@@ -1214,7 +1290,7 @@ function (_SmartApollo) {
       args[_key] = arguments[_key];
     }
 
-    _this = _possibleConstructorReturn(this, (_getPrototypeOf2 = _getPrototypeOf(SmartSubscription)).call.apply(_getPrototypeOf2, [this].concat(args)));
+    _this = _super.call.apply(_super, [this].concat(args));
 
     _defineProperty(_assertThisInitialized(_this), "type", 'subscription');
 
@@ -1282,9 +1358,7 @@ function (_SmartApollo) {
   return SmartSubscription;
 }(SmartApollo);
 
-var DollarApollo =
-/*#__PURE__*/
-function () {
+var DollarApollo = /*#__PURE__*/function () {
   function DollarApollo(vm) {
     _classCallCheck(this, DollarApollo);
 
@@ -1299,6 +1373,11 @@ function () {
   }
 
   _createClass(DollarApollo, [{
+    key: "provider",
+    get: function get() {
+      return this.vm.$apolloProvider;
+    }
+  }, {
     key: "getClient",
     value: function getClient() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
@@ -1384,6 +1463,16 @@ function () {
       }
     }
   }, {
+    key: "loading",
+    get: function get() {
+      return this.vm.$data.$apolloData.loading !== 0;
+    }
+  }, {
+    key: "data",
+    get: function get() {
+      return this.vm.$data.$apolloData.data;
+    }
+  }, {
     key: "addSmartQuery",
     value: function addSmartQuery(key, options) {
       var _this3 = this;
@@ -1406,7 +1495,7 @@ function () {
       }
 
       if (apollo && apollo.$query) {
-        $query = _objectSpread2({}, $query || {}, {}, apollo.$query);
+        $query = _objectSpread2(_objectSpread2({}, $query || {}), apollo.$query);
       }
 
       if ($query) {
@@ -1430,12 +1519,12 @@ function () {
         if (subs) {
           if (Array.isArray(subs)) {
             subs.forEach(function (sub, index) {
-              _this3.addSmartSubscription("".concat(key).concat(index), _objectSpread2({}, sub, {
+              _this3.addSmartSubscription("".concat(key).concat(index), _objectSpread2(_objectSpread2({}, sub), {}, {
                 linkedQuery: smart
               }));
             });
           } else {
-            this.addSmartSubscription(key, _objectSpread2({}, subs, {
+            this.addSmartSubscription(key, _objectSpread2(_objectSpread2({}, subs), {}, {
               linkedQuery: smart
             }));
           }
@@ -1473,63 +1562,6 @@ function () {
     } // eslint-disable-next-line accessor-pairs
 
   }, {
-    key: "destroy",
-    value: function destroy() {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = this._watchers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var unwatch = _step.value;
-          unwatch();
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-            _iterator["return"]();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      for (var key in this.queries) {
-        this.queries[key].destroy();
-      }
-
-      for (var _key2 in this.subscriptions) {
-        this.subscriptions[_key2].destroy();
-      }
-
-      this._apolloSubscriptions.forEach(function (sub) {
-        sub.unsubscribe();
-      });
-
-      this._apolloSubscriptions = null;
-      this.vm = null;
-    }
-  }, {
-    key: "provider",
-    get: function get() {
-      return this.vm.$apolloProvider;
-    }
-  }, {
-    key: "loading",
-    get: function get() {
-      return this.vm.$data.$apolloData.loading !== 0;
-    }
-  }, {
-    key: "data",
-    get: function get() {
-      return this.vm.$data.$apolloData.data;
-    }
-  }, {
     key: "skipAllQueries",
     set: function set(value) {
       for (var key in this.queries) {
@@ -1551,14 +1583,44 @@ function () {
       this.skipAllQueries = value;
       this.skipAllSubscriptions = value;
     }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      var _iterator = _createForOfIteratorHelper(this._watchers),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var unwatch = _step.value;
+          unwatch();
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+
+      for (var key in this.queries) {
+        this.queries[key].destroy();
+      }
+
+      for (var _key2 in this.subscriptions) {
+        this.subscriptions[_key2].destroy();
+      }
+
+      this._apolloSubscriptions.forEach(function (sub) {
+        sub.unsubscribe();
+      });
+
+      this._apolloSubscriptions = null;
+      this.vm = null;
+    }
   }]);
 
   return DollarApollo;
 }();
 
-var ApolloProvider =
-/*#__PURE__*/
-function () {
+var ApolloProvider = /*#__PURE__*/function () {
   function ApolloProvider(options) {
     _classCallCheck(this, ApolloProvider);
 
@@ -1589,6 +1651,371 @@ function () {
 
   return ApolloProvider;
 }();
+
+function isDataFilled(data) {
+  return Object.keys(data).length > 0;
+}
+
+var CApolloQuery = {
+  name: 'ApolloQuery',
+  provide: function provide() {
+    return {
+      getDollarApollo: this.getDollarApollo,
+      getApolloQuery: this.getApolloQuery
+    };
+  },
+  props: {
+    query: {
+      type: [Function, Object],
+      required: true
+    },
+    variables: {
+      type: Object,
+      "default": undefined
+    },
+    fetchPolicy: {
+      type: String,
+      "default": undefined
+    },
+    pollInterval: {
+      type: Number,
+      "default": undefined
+    },
+    notifyOnNetworkStatusChange: {
+      type: Boolean,
+      "default": undefined
+    },
+    context: {
+      type: Object,
+      "default": undefined
+    },
+    update: {
+      type: Function,
+      "default": function _default(data) {
+        return data;
+      }
+    },
+    skip: {
+      type: Boolean,
+      "default": false
+    },
+    debounce: {
+      type: Number,
+      "default": 0
+    },
+    throttle: {
+      type: Number,
+      "default": 0
+    },
+    clientId: {
+      type: String,
+      "default": undefined
+    },
+    deep: {
+      type: Boolean,
+      "default": undefined
+    },
+    tag: {
+      type: String,
+      "default": 'div'
+    },
+    prefetch: {
+      type: Boolean,
+      "default": true
+    },
+    options: {
+      type: Object,
+      "default": function _default() {
+        return {};
+      }
+    }
+  },
+  data: function data() {
+    return {
+      result: {
+        data: null,
+        loading: false,
+        networkStatus: 7,
+        error: null
+      },
+      times: 0
+    };
+  },
+  watch: {
+    fetchPolicy: function fetchPolicy(value) {
+      this.$apollo.queries.query.setOptions({
+        fetchPolicy: value
+      });
+    },
+    pollInterval: function pollInterval(value) {
+      this.$apollo.queries.query.setOptions({
+        pollInterval: value
+      });
+    },
+    notifyOnNetworkStatusChange: function notifyOnNetworkStatusChange(value) {
+      this.$apollo.queries.query.setOptions({
+        notifyOnNetworkStatusChange: value
+      });
+    },
+    '$data.$apolloData.loading': function $data$apolloDataLoading(value) {
+      this.$emit('loading', !!value);
+    }
+  },
+  apollo: {
+    $client: function $client() {
+      return this.clientId;
+    },
+    query: function query() {
+      return _objectSpread2(_objectSpread2({
+        query: function query() {
+          if (typeof this.query === 'function') {
+            return this.query(gql);
+          }
+
+          return this.query;
+        },
+        variables: function variables() {
+          return this.variables;
+        },
+        fetchPolicy: this.fetchPolicy,
+        pollInterval: this.pollInterval,
+        debounce: this.debounce,
+        throttle: this.throttle,
+        notifyOnNetworkStatusChange: this.notifyOnNetworkStatusChange,
+        context: function context() {
+          return this.context;
+        },
+        skip: function skip() {
+          return this.skip;
+        },
+        deep: this.deep,
+        prefetch: this.prefetch
+      }, this.options), {}, {
+        manual: true,
+        result: function result(_result) {
+          var _result2 = _result,
+              errors = _result2.errors,
+              loading = _result2.loading,
+              networkStatus = _result2.networkStatus;
+          var _result3 = _result,
+              error = _result3.error;
+          _result = Object.assign({}, _result);
+
+          if (errors && errors.length) {
+            error = new Error("Apollo errors occurred (".concat(errors.length, ")"));
+            error.graphQLErrors = errors;
+          }
+
+          var data = {};
+
+          if (loading) {
+            Object.assign(data, this.$_previousData, _result.data);
+          } else if (error) {
+            Object.assign(data, this.$apollo.queries.query.observer.getLastResult() || {}, _result.data);
+          } else {
+            data = _result.data;
+            this.$_previousData = _result.data;
+          }
+
+          var dataNotEmpty = isDataFilled(data);
+          this.result = {
+            data: dataNotEmpty ? this.update(data) : undefined,
+            fullData: dataNotEmpty ? data : undefined,
+            loading: loading,
+            error: error,
+            networkStatus: networkStatus
+          };
+          this.times = ++this.$_times;
+          this.$emit('result', this.result);
+        },
+        error: function error(_error) {
+          this.result.loading = false;
+          this.result.error = _error;
+          this.$emit('error', _error);
+        }
+      });
+    }
+  },
+  created: function created() {
+    this.$_times = 0;
+  },
+  methods: {
+    getDollarApollo: function getDollarApollo() {
+      return this.$apollo;
+    },
+    getApolloQuery: function getApolloQuery() {
+      return this.$apollo.queries.query;
+    }
+  },
+  render: function render(h) {
+    var result = this.$scopedSlots["default"]({
+      result: this.result,
+      times: this.times,
+      query: this.$apollo.queries.query,
+      isLoading: this.$apolloData.loading,
+      gqlError: this.result && this.result.error && this.result.error.gqlError
+    });
+
+    if (Array.isArray(result)) {
+      result = result.concat(this.$slots["default"]);
+    } else {
+      result = [result].concat(this.$slots["default"]);
+    }
+
+    return this.tag ? h(this.tag, result) : result[0];
+  }
+};
+
+var uid = 0;
+var CApolloSubscribeToMore = {
+  name: 'ApolloSubscribeToMore',
+  inject: ['getDollarApollo', 'getApolloQuery'],
+  props: {
+    document: {
+      type: [Function, Object],
+      required: true
+    },
+    variables: {
+      type: Object,
+      "default": undefined
+    },
+    updateQuery: {
+      type: Function,
+      "default": undefined
+    }
+  },
+  watch: {
+    document: 'refresh',
+    variables: 'refresh'
+  },
+  created: function created() {
+    this.$_key = "sub_component_".concat(uid++);
+  },
+  mounted: function mounted() {
+    this.refresh();
+  },
+  beforeDestroy: function beforeDestroy() {
+    this.destroy();
+  },
+  methods: {
+    destroy: function destroy() {
+      if (this.$_sub) {
+        this.$_sub.destroy();
+      }
+    },
+    refresh: function refresh() {
+      this.destroy();
+      var document = this.document;
+
+      if (typeof document === 'function') {
+        document = document(gql);
+      }
+
+      this.$_sub = this.getDollarApollo().addSmartSubscription(this.$_key, {
+        document: document,
+        variables: this.variables,
+        updateQuery: this.updateQuery,
+        linkedQuery: this.getApolloQuery()
+      });
+    }
+  },
+  render: function render(h) {
+    return null;
+  }
+};
+
+var CApolloMutation = {
+  props: {
+    mutation: {
+      type: [Function, Object],
+      required: true
+    },
+    variables: {
+      type: Object,
+      "default": undefined
+    },
+    optimisticResponse: {
+      type: Object,
+      "default": undefined
+    },
+    update: {
+      type: Function,
+      "default": undefined
+    },
+    refetchQueries: {
+      type: Function,
+      "default": undefined
+    },
+    clientId: {
+      type: String,
+      "default": undefined
+    },
+    tag: {
+      type: String,
+      "default": 'div'
+    }
+  },
+  data: function data() {
+    return {
+      loading: false,
+      error: null
+    };
+  },
+  watch: {
+    loading: function loading(value) {
+      this.$emit('loading', value);
+    }
+  },
+  methods: {
+    mutate: function mutate(options) {
+      var _this = this;
+
+      this.loading = true;
+      this.error = null;
+      var mutation = this.mutation;
+
+      if (typeof mutation === 'function') {
+        mutation = mutation(gql);
+      }
+
+      this.$apollo.mutate(_objectSpread2({
+        mutation: mutation,
+        client: this.clientId,
+        variables: this.variables,
+        optimisticResponse: this.optimisticResponse,
+        update: this.update,
+        refetchQueries: this.refetchQueries
+      }, options)).then(function (result) {
+        _this.$emit('done', result);
+
+        _this.loading = false;
+      })["catch"](function (e) {
+        utils_7(e);
+        _this.error = e;
+
+        _this.$emit('error', e);
+
+        _this.loading = false;
+      });
+    }
+  },
+  render: function render(h) {
+    var result = this.$scopedSlots["default"]({
+      mutate: this.mutate,
+      loading: this.loading,
+      error: this.error,
+      gqlError: this.error && this.error.gqlError
+    });
+
+    if (Array.isArray(result)) {
+      result = result.concat(this.$slots["default"]);
+    } else {
+      result = [result].concat(this.$slots["default"]);
+    }
+
+    return this.tag ? h(this.tag, result) : result[0];
+  }
+};
 
 function hasProperty(holder, key) {
   return typeof holder !== 'undefined' && Object.prototype.hasOwnProperty.call(holder, key);
@@ -1729,9 +2156,9 @@ function destroy() {
 }
 
 function installMixin(Vue, vueVersion) {
-  Vue.mixin(_objectSpread2({}, vueVersion === '1' ? {
+  Vue.mixin(_objectSpread2(_objectSpread2(_objectSpread2({}, vueVersion === '1' ? {
     init: initProvider
-  } : {}, {}, vueVersion === '2' ? {
+  } : {}), vueVersion === '2' ? {
     data: function data() {
       return {
         $apolloData: {
@@ -1763,7 +2190,7 @@ function installMixin(Vue, vueVersion) {
         return Promise.all(this.$_apolloPromises);
       }
     }
-  } : {}, {
+  } : {}), {}, {
     created: launch,
     destroyed: destroy
   }));
@@ -1804,12 +2231,25 @@ function install(Vue, options) {
     }
   });
   installMixin(Vue, vueVersion);
+
+  if (vueVersion === '2') {
+    Vue.component('apollo-query', CApolloQuery);
+    Vue.component('ApolloQuery', CApolloQuery);
+    Vue.component('apollo-subscribe-to-more', CApolloSubscribeToMore);
+    Vue.component('ApolloSubscribeToMore', CApolloSubscribeToMore);
+    Vue.component('apollo-mutation', CApolloMutation);
+    Vue.component('ApolloMutation', CApolloMutation);
+  }
 }
 ApolloProvider.install = install; // eslint-disable-next-line no-undef
 
-ApolloProvider.version = "3.1.1"; // Apollo provider
+ApolloProvider.version = "3.1.2"; // Apollo provider
 
-var ApolloProvider$1 = ApolloProvider; // Auto-install
+var ApolloProvider$1 = ApolloProvider; // Components
+
+var ApolloQuery = CApolloQuery;
+var ApolloSubscribeToMore = CApolloSubscribeToMore;
+var ApolloMutation = CApolloMutation; // Auto-install
 
 var GlobalVue = null;
 
@@ -1824,4 +2264,4 @@ if (GlobalVue) {
 }
 
 export default ApolloProvider;
-export { ApolloProvider$1 as ApolloProvider, install };
+export { ApolloMutation, ApolloProvider$1 as ApolloProvider, ApolloQuery, ApolloSubscribeToMore, install };
